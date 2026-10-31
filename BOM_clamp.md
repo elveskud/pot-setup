@@ -22,9 +22,11 @@ Wiring: supply → fuse → switch → PWM module → motor.
 ## Mechanical / hardware
 | Qty | Part | Notes |
 |---|---|---|
-| 1 | Stainless rod Ø6 mm, 304/316, **~200 mm** | Cut to `pot_depth + arm_z − 5`. Optional: drill a Ø3 mm cross hole 20 mm from the lower end |
+| 1 | Stainless rod Ø6 mm, 304/316 | Length = **pot depth + 50 mm** (e.g. 140 mm deep → 190 mm), cut for the arm at its lowest position. Raise the arm for deeper pots |
+| 1 | **Vertical post: Ø12 mm rod, aluminium or stainless, 260 mm** | The arm slides on it. Must be a smooth round rod, 11.9–12.0 mm |
+| 3 | M5 thumb screws (≈ 20 mm) + 3 M5 nuts | 1 locks the post in the clamp, 2 lock the sliding arm (hex nut traps are in the CAD) |
 | 1 | Rigid shaft coupler 6 mm → 6 mm | Set-screw type, ~25 mm long |
-| 1 | M6 thumb screw, 30–40 mm + M6 nut | Clamp screw. Add a silicone/rubber pad on the tip |
+| 1 | M6 thumb screw, **40–45 mm** + M6 nut | Rim clamp screw (the outer jaw is 24 mm thick). Add a silicone/rubber pad on the tip |
 | 6 | M3 × 10 screws | Motor to arm (heads sit in counterbores under the arm). **Do not use longer: the motor's threaded holes are shallow** |
 | 2 | M4 × 20 screws + 2 M4 nuts | Box to arm (nuts sit in hex traps under the arm) |
 | 4 | M4 × 25 screws + 4 M4 nuts | Blade halves clamp the rod |
@@ -35,9 +37,10 @@ Wiring: supply → fuse → switch → PWM module → motor.
 ## Print settings
 | Part | Qty | Orientation | Material |
 |---|---|---|---|
-| `clamp_arm` | 1 | **On its side** (the profile lies flat on the bed, 40 mm tall), no supports | PETG or ASA, 4+ walls, 40–50 % infill. Bores and the M6 hole may need a touch of cleanup |
+| `clamp_arm` (rim clamp + post socket) | 1 | **On its side** (the profile lies flat on the bed, 40 mm tall), no supports | **ABS**, 4+ walls, 40–50 % infill. Bores and the M6 hole may need a touch of cleanup |
+| `arm_slide` (sliding arm + motor plate) | 1 | **On its side**, no supports | **ABS**, 5 walls, 50 % infill |
 | `blade_half` | 2 | Flat face (y = 0) on the bed | PP, PA12 or similar, 4+ walls, 100 % infill near the hub |
-| `box_base`, `box_lid` | 1 each | Open side up / flat | PETG |
+| `box_base`, `box_lid` | 1 each | Open side up / flat | ABS |
 
 The second `blade_half` needs no mirroring: the assembly rotates it 180°.
 

@@ -42,7 +42,7 @@ Model renders clean (lid, anchor, paddle, motor plate are valid solids). Firmwar
 
 
 ## Alternative: clamp-on stirrer (Stirmate-style, fully 3D-printable)
-`cad/clamp_stirrer.scad` is a lid-free version: a printed clamp hooks over the pot rim, an arm carries a
+`cad/clamp_stirrer.scad` is a lid-free version: a printed clamp hooks over the pot rim, a vertical 12 mm post rises from it, and an arm that **slides up and down the post** (locked with thumb screws) carries a
 37 mm gearmotor to the pot centre, a split-hub blade (two identical printed halves) clamps a 6 mm rod, a
 and a small box on the arm holds a PWM speed controller. It is agitator only: no probe or alarm (`with_probe = true` in the CAD adds an optional probe tube).
 Parts list and print notes: **BOM_clamp.md**. Preview: `cad/renders/clamp_side.png`.

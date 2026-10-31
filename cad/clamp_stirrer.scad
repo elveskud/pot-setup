@@ -8,11 +8,12 @@
 //  (6 mm D shaft, 12 mm boss, 6x M3 on a 31 mm circle): VERIFY vs datasheet.
 //
 //  Parts (print each once unless noted):
-//    clamp_arm   - rim clamp + riser + arm + motor plate   (prints on its SIDE)
+//    clamp_arm   - rim clamp with post socket              (prints on its SIDE)
+//    arm_slide   - sliding arm + motor plate; slides on the post (prints on its SIDE)
 //    box_base, box_lid  - controller enclosure (bolts to the arm)
 //    blade_half  - agitator half, print 2x (identical: one is flipped)
 //  render:  openscad -D 'part="clamp_arm"' -o clamp_arm.stl clamp_stirrer.scad
-//  part = "assembly" | "clamp_arm" | "box_base" | "box_lid" | "blade_half"
+//  part = "assembly" | "clamp_arm" | "arm_slide" | "box_base" | "box_lid" | "blade_half"
 // =====================================================================
 part    = "assembly";
 with_probe = false;             // true adds the optional temperature-probe tube
@@ -28,12 +29,16 @@ wall_gap   = 3;     // blade <-> wall
 
 // ---------------- CLAMP / ARM ---------------------------------------
 w          = 40;    // part width (Y)
-jaw_t      = 10;    // outer jaw thickness (holds M6 nut trap)
+jaw_t      = 24;    // outer jaw/post socket thickness (X)
 in_jaw_t   = 6;     // inner jaw thickness
 jaw_d      = 40;    // how far the jaws hang below the rim
 bridge_t   = 8;     // bridge over the rim
-riser_t    = 16;
-arm_z      = 60;    // underside of arm above the rim
+socket_h   = 45;    // post socket height above the bridge
+post_d     = 12;    // vertical post: 12 mm aluminium or stainless rod
+post_len   = 260;   // post length (sets the max arm height)
+sleeve_h   = 50;    // sliding sleeve height
+sleeve_w   = 34;    // sleeve size in X
+arm_z      = 60;    // CURRENT underside of arm above the rim (slide it: min = see below)
 arm_t      = 10;
 arm_end    = 22;    // arm tip x (motor sits at x = 0)
 screw_z    = -22;   // clamp screw height (M6 thumb screw)
@@ -57,6 +62,8 @@ blade_h    = 66;    // wall blade height; keep tip below the jaws/probe tube
 R_o    = pot_id/2 + pot_wall;
 xo1    = -(R_o + rim_bead);           // inner face of outer jaw
 xo0    = xo1 - jaw_t;
+px     = xo0 + jaw_t/2;               // vertical post axis (outside the pot wall)
+arm_z_min = 0.5 + bridge_t + socket_h;   // lowest the sleeve can slide
 xi0    = -pot_id/2 + 1;               // inner jaw, inside the bore
 xi1    = xi0 + in_jaw_t;
 arm_top= arm_z + arm_t;
@@ -65,15 +72,12 @@ R_ag   = pot_id/2 - wall_gap;
 probe_x= xi1 + 14;                    // probe tube centre (stays off the hot wall)
 $fn = 48;
 
-// ======================= CLAMP ARM ===================================
+// ======================= CLAMP (with post socket) ====================
 module profile() {                    // side profile in the XZ plane (2D x,z)
   union() {
-    translate([xo0, -jaw_d])          square([jaw_t, jaw_d + 0.5 + bridge_t]); // outer jaw
-    translate([xi0, -jaw_d])          square([in_jaw_t, jaw_d + 0.5 + bridge_t]); // inner jaw
-    translate([xo0, 0.5])             square([xi1 - xo0, bridge_t]);          // bridge
-    translate([xo0, 0.5])             square([riser_t, arm_top - 0.5]);       // riser
-    translate([xo0, arm_z])           square([arm_end - xo0, arm_t]);         // arm
-    polygon([[xo0+riser_t, arm_z],[xo0+riser_t+50, arm_z],[xo0+riser_t, arm_z-50]]); // gusset
+    translate([xo0, -jaw_d])          square([jaw_t, jaw_d + 0.5 + bridge_t + socket_h]); // outer jaw + socket
+    translate([xi0, -jaw_d])          square([in_jaw_t, jaw_d + 0.5 + bridge_t]);       // inner jaw
+    translate([xo0, 0.5])             square([xi1 - xo0, bridge_t]);                    // bridge
     if (with_probe) {
       translate([probe_x-8, -probe_tip-4]) square([16, probe_tip+4 - 25]);
       translate([xi1-1, -probe_tip-4]) square([probe_x-8-xi1+2, probe_tip+4-25]);
@@ -81,27 +85,52 @@ module profile() {                    // side profile in the XZ plane (2D x,z)
   }
 }
 
-module clamp_arm() {
+module clamp_arm() {                  // the clamp: jaws + post socket (prints on its side)
   difference() {
     translate([0, w/2, 0]) rotate([90,0,0]) linear_extrude(w) profile();
     // M6 clamp screw through outer jaw + hex nut trap on outside face
     translate([xo0-1, 0, screw_z]) rotate([0,90,0]) cylinder(d=6.5, h=jaw_t+2);
     translate([xo0-1, 0, screw_z]) rotate([0,90,0]) cylinder(d=11.6, h=1+5.5, $fn=6);
-    // motor plate: boss clearance + 6 x M3 with counterbores from below
-    translate([0,0,arm_z-1]) cylinder(d=m_boss_d, h=arm_t+2);
-    for (a=[0:60:359]) rotate(a) translate([m_pcd/2,0,arm_z-1]) {
-      cylinder(d=m_screw_d, h=arm_t+2);
-      cylinder(d=6.6, h=1+5);
-    }
-    // box mounting: 2 x M4, nut traps on the underside
-    for (x=[bx_x-bx_hole, bx_x+bx_hole]) translate([x,0,arm_z-1]) {
-      cylinder(d=4.4, h=arm_t+2);
-      cylinder(d=8.4, h=1+3.6, $fn=6);
-    }
+    // vertical post bore (12 mm rod, fixed with an M5 thumb screw from the outer face)
+    translate([px,0,3]) cylinder(d=post_d+0.3, h=0.5+bridge_t+socket_h);
+    translate([xo0-1, 0, 0.5+bridge_t+socket_h/2]) rotate([0,90,0]) cylinder(d=5.4, h=jaw_t/2);
+    translate([xo0-1, 0, 0.5+bridge_t+socket_h/2]) rotate([0,90,0]) cylinder(d=9.4, h=1+4.5, $fn=6);
     // probe tube bore (open top) + lip at bottom so the probe tip pokes out
     if (with_probe) {
       translate([probe_x,0,-probe_tip])   cylinder(d=probe_d, h=probe_len*2);
       translate([probe_x,0,-probe_tip-5]) cylinder(d=4.6, h=10);
+    }
+  }
+}
+
+// ======================= SLIDING ARM =================================
+// Slides on the 12 mm post; lock with 2 x M5 thumb screws (one from +Y, one from -Y).
+// Local origin: z = 0 is the underside of the arm; the sleeve rises above it.
+module arm_profile() {
+  union() {
+    translate([px-sleeve_w/2, 0]) square([sleeve_w, sleeve_h]);                 // sleeve
+    translate([px-sleeve_w/2, 0]) square([arm_end-(px-sleeve_w/2), arm_t]);     // arm
+  }
+}
+module arm_slide() {
+  difference() {
+    translate([0, w/2, 0]) rotate([90,0,0]) linear_extrude(w) arm_profile();
+    translate([px,0,-1]) cylinder(d=post_d+0.4, h=sleeve_h+2);                  // post bore
+    // M5 thumb screws: low one from -Y, high one from +Y, captive hex nut on the outer face
+    translate([px,-w/2-1,arm_t+8])        rotate([-90,0,0]) cylinder(d=5.4, h=w/2);
+    translate([px,-w/2-1,arm_t+8])        rotate([-90,0,0]) cylinder(d=9.4, h=1+4.5, $fn=6);
+    translate([px, w/2+1,sleeve_h-10])    rotate([ 90,0,0]) cylinder(d=5.4, h=w/2);
+    translate([px, w/2+1,sleeve_h-10])    rotate([ 90,0,0]) cylinder(d=9.4, h=1+4.5, $fn=6);
+    // motor plate: boss clearance + 6 x M3 with counterbores from below
+    translate([0,0,-1]) cylinder(d=m_boss_d, h=arm_t+2);
+    for (a=[0:60:359]) rotate(a) translate([m_pcd/2,0,-1]) {
+      cylinder(d=m_screw_d, h=arm_t+2);
+      cylinder(d=6.6, h=1+5);
+    }
+    // box mounting: 2 x M4, nut traps on the underside
+    for (x=[bx_x-bx_hole, bx_x+bx_hole]) translate([x,0,-1]) {
+      cylinder(d=4.4, h=arm_t+2);
+      cylinder(d=8.4, h=1+3.6, $fn=6);
     }
   }
 }
@@ -164,6 +193,8 @@ module assembly() {
     if (section) translate([-300,0,-pot_depth-1]) cube([600,300,pot_depth+2]);
   }
   color("orange") clamp_arm();
+  color("silver") translate([px,0,3]) cylinder(d=post_d, h=post_len);               // post
+  color("goldenrod") translate([0,0,arm_z]) arm_slide();
   color("seagreen") translate([bx_x,0,arm_top]) { box_base();
     translate([0,0,bx_h]) box_lid(); }
   color("dimgray") translate([0,0,arm_top]) cylinder(d=37,h=100);      // motor
@@ -184,6 +215,7 @@ module blade_plate_2d() {
 if (part=="assembly")   assembly();
 if (part=="blade_plate_2d") blade_plate_2d();
 if (part=="clamp_arm")  clamp_arm();
+if (part=="arm_slide")  arm_slide();
 if (part=="box_base")   box_base();
 if (part=="box_lid")    box_lid();
 if (part=="blade_half") blade_half();
