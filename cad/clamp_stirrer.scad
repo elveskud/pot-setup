@@ -173,7 +173,16 @@ module assembly() {
   if (with_probe) color("white") translate([probe_x,0,-probe_tip]) cylinder(d=6,h=probe_len); // probe
 }
 
+// Stainless blade for laser cutting: one flat plate, both arms (2D, 3 mm stock).
+module blade_plate_2d() {
+  difference() {
+    union() { blade_profile(); mirror([1,0]) blade_profile(); }
+    circle(d = rod_d + 0.2);        // rod hole: weld the rod in, or clamp between collars
+  }
+}
+
 if (part=="assembly")   assembly();
+if (part=="blade_plate_2d") blade_plate_2d();
 if (part=="clamp_arm")  clamp_arm();
 if (part=="box_base")   box_base();
 if (part=="box_lid")    box_lid();
