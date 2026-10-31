@@ -19,10 +19,10 @@ with_probe = false;             // true adds the optional temperature-probe tube
 section = true;                 // assembly: cut the pot open
 
 // ---------------- POT (MEASURE) --------------------------------------
-pot_id     = 220;   // inside diameter at the rim
+pot_id     = 200;   // inside diameter at the rim
 pot_depth  = 140;   // rim to inside floor
 pot_wall   = 3;     // wall thickness at the rim
-rim_bead   = 2;     // how far a rolled rim sticks out past the wall (0 if none)
+rim_bead   = 0;     // how far a rolled rim sticks out past the wall (0 if none)
 floor_gap  = 3;     // blade <-> floor
 wall_gap   = 3;     // blade <-> wall
 
