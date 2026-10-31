@@ -15,6 +15,7 @@
 //  part = "assembly" | "clamp_arm" | "box_base" | "box_lid" | "blade_half"
 // =====================================================================
 part    = "assembly";
+with_probe = false;             // true adds the optional temperature-probe tube
 section = true;                 // assembly: cut the pot open
 
 // ---------------- POT (MEASURE) --------------------------------------
@@ -73,9 +74,10 @@ module profile() {                    // side profile in the XZ plane (2D x,z)
     translate([xo0, 0.5])             square([riser_t, arm_top - 0.5]);       // riser
     translate([xo0, arm_z])           square([arm_end - xo0, arm_t]);         // arm
     polygon([[xo0+riser_t, arm_z],[xo0+riser_t+50, arm_z],[xo0+riser_t, arm_z-50]]); // gusset
-    // probe tube block (full width keeps it printable without supports)
-    translate([probe_x-8, -probe_tip-4]) square([16, probe_tip+4 - 25]);
-    translate([xi1-1, -probe_tip-4]) square([probe_x-8-xi1+2, probe_tip+4-25]);   // web tying tube to the inner jaw
+    if (with_probe) {
+      translate([probe_x-8, -probe_tip-4]) square([16, probe_tip+4 - 25]);
+      translate([xi1-1, -probe_tip-4]) square([probe_x-8-xi1+2, probe_tip+4-25]);
+    }
   }
 }
 
@@ -92,21 +94,22 @@ module clamp_arm() {
       cylinder(d=6.6, h=1+5);
     }
     // box mounting: 2 x M4, nut traps on the underside
-    for (x=[-98,-30]) translate([x,0,arm_z-1]) {
+    for (x=[bx_x-bx_hole, bx_x+bx_hole]) translate([x,0,arm_z-1]) {
       cylinder(d=4.4, h=arm_t+2);
       cylinder(d=8.4, h=1+3.6, $fn=6);
     }
     // probe tube bore (open top) + lip at bottom so the probe tip pokes out
-    translate([probe_x,0,-probe_tip])      cylinder(d=probe_d, h=probe_len+probe_len);
-    translate([probe_x,0,-probe_tip-5])    cylinder(d=4.6, h=10);
-    // cable zip-tie slot beside the tube top
-    translate([probe_x-8-1,-3,-30]) cube([2,6,6]);
+    if (with_probe) {
+      translate([probe_x,0,-probe_tip])   cylinder(d=probe_d, h=probe_len*2);
+      translate([probe_x,0,-probe_tip-5]) cylinder(d=4.6, h=10);
+    }
   }
 }
 
 // ======================= ELECTRONICS BOX ==============================
-bx_l = 84; bx_w = 58; bx_h = 30; bx_wall = 2.4;
+bx_l = 64; bx_w = 46; bx_h = 28; bx_wall = 2.4;
 bx_x = -64;                                  // box centre x on the arm
+bx_hole = 22;                                // M4 hole offset from box centre
 module box_base() {
   difference() {
     union() {
@@ -117,20 +120,17 @@ module box_base() {
       for (sx=[-1,1],sy=[-1,1]) translate([sx*(bx_l/2-5),sy*(bx_w/2-5),0]) cylinder(d=8,h=bx_h); // M3 lid posts
     }
     for (sx=[-1,1],sy=[-1,1]) translate([sx*(bx_l/2-5),sy*(bx_w/2-5),bx_h-12]) cylinder(d=4.2,h=13); // M3 heat-set
-    for (x=[-34,34]) translate([x,0,-1]) cylinder(d=4.4,h=bx_wall+2);              // M4 to arm
-    translate([bx_l/2-6,-14,12]) rotate([0,90,0]) cylinder(d=12.5,h=10);           // PG7 gland: motor
-    translate([bx_l/2-6, 14,12]) rotate([0,90,0]) cylinder(d=12.5,h=10);           // PG7 gland: probe
-    translate([-bx_l/2-1, 0,14]) rotate([0,90,0]) cylinder(d=11,h=10);             // DC barrel jack
+    for (x=[-bx_hole,bx_hole]) translate([x,0,-1]) cylinder(d=4.4,h=bx_wall+2);    // M4 to arm
+    translate([bx_l/2-6,0,12]) rotate([0,90,0]) cylinder(d=12.5,h=10);            // PG7 gland: motor cable
+    translate([-bx_l/2-1,0,14]) rotate([0,90,0]) cylinder(d=11,h=10);             // DC barrel jack
   }
 }
 module box_lid() {
   difference() {
     translate([-bx_l/2,-bx_w/2,0]) cube([bx_l,bx_w,bx_wall]);
     for (sx=[-1,1],sy=[-1,1]) translate([sx*(bx_l/2-5),sy*(bx_w/2-5),-1]) cylinder(d=3.4,h=bx_wall+2);
-    translate([-20, 12,-1]) cylinder(d=7.2,h=bx_wall+2);    // speed pot (6 mm shaft)
-    translate([ 0, 12,-1]) cylinder(d=12.2,h=bx_wall+2);    // START/STOP button
-    for (i=[0:2],j=[0:2]) translate([18+i*5,-12+j*5,-1]) cylinder(d=2,h=bx_wall+2); // buzzer holes
-    translate([-30,-12,-1]) cylinder(d=3.4,h=bx_wall+2);    // spare / LED
+    translate([-12,0,-1]) cylinder(d=7.2,h=bx_wall+2);      // speed pot (6 mm shaft)
+    translate([ 12,0,-1]) cylinder(d=12.2,h=bx_wall+2);     // on/off switch (12 mm round)
   }
 }
 
@@ -170,7 +170,7 @@ module assembly() {
   color("steelblue") translate([0,0,z_bot+1]) cylinder(d=rod_d,h=arm_z-12-z_bot); // rod
   color("tomato") translate([0,0,z_bot]) { blade_half();
     rotate(180) blade_half(); }
-  color("white") translate([probe_x,0,-probe_tip]) cylinder(d=6,h=probe_len); // probe
+  if (with_probe) color("white") translate([probe_x,0,-probe_tip]) cylinder(d=6,h=probe_len); // probe
 }
 
 if (part=="assembly")   assembly();

@@ -1,32 +1,23 @@
-# Clamp-on stirrer: parts list
+# Clamp-on stirrer (agitator only): parts list
 
-Controller firmware is unchanged: `firmware/pot_controller/` (Arduino Nano, 90 °C alarm + motor stop).
+No probe, no alarm, no Arduino: a motor, a speed knob and a power switch.
 Prices/stock not checked: search a shop for the **spec**.
 
 ## Electronics
 | Qty | Part | Spec | Notes |
 |---|---|---|---|
-| 1 | Arduino Nano (or clone) | ATmega328P, 5 V | |
-| 1 | Gearmotor, 37 mm | **12 V DC brushed, 30–60 rpm output, ≥ 15 kg·cm rated (stall ≥ 30), 6 mm D-shaft, 12 mm boss, 6 × M3 holes on 31 mm circle** | The CAD motor plate matches this common "37D" pattern. **Check your motor's datasheet** and edit `m_pcd`, `m_boss_d`. No encoder needed. |
-| 1 | DS18B20 waterproof probe | 316 stainless **6 mm × 30 mm**, PTFE cable | The tube in the clamp is sized for this probe. For ±0.5 °C near 90 °C use PT1000 + MAX31865 instead |
-| 1 | 4.7 kΩ resistor | 1/4 W | DS18B20 pull-up (D2 → 5 V) |
-| 1 | Logic-level N-MOSFET | IRLZ44N | Motor switch, PWM on D3 |
-| 1 | 100 Ω + 10 kΩ resistors | | Gate resistor / gate pull-down |
-| 1 | Schottky diode | 1N5819 or SS34 | Flyback across motor |
-| 1 | Capacitor 470 µF 25 V + 100 nF ceramic | | 12 V rail smoothing; 100 nF across motor terminals |
-| 1 | Buck converter 12 V → 5 V | 1 A (Mini560 / LM2596 / MP1584) | Powers the Nano from the 12 V rail |
-| 1 | Active buzzer | 5 V, ≥ 85 dB | D8 (add a 2N2222 + 1 kΩ if it draws > 25 mA) |
-| 1 | Momentary push button | 12 mm panel mount | START/STOP, D4 to GND |
-| 1 | 10 kΩ linear potentiometer + knob | 6 mm shaft | Speed, A0 |
-| 1 | 12 V DC power supply | **12 V, 3 A**, 5.5 × 2.1 mm barrel plug | Stall current can exceed rated current |
+| 1 | Gearmotor, 37 mm | **12 V DC brushed, 30–60 rpm output, ≥ 15 kg·cm rated, 6 mm D-shaft, 12 mm boss, 6 × M3 holes on 31 mm circle** | Check your motor's datasheet and edit `m_pcd`, `m_boss_d` in the CAD if it differs |
+| 1 | PWM DC motor speed controller module | 12 V, ≥ 5 A, with on-board potentiometer (the common "DC 6–28 V 5–10 A PWM motor controller") | Replaces the Arduino. Desolder the board pot and wire a panel pot if the board's knob won't fit the lid; or just use the small box and mount the module inside |
+| 1 | 10 kΩ–100 kΩ panel potentiometer + knob | 6 mm shaft | Only if the module has a pin header for an external pot; otherwise skip |
+| 1 | Switch, 12 mm round panel mount | SPST on/off, ≥ 5 A at 12 V | In the 12 V line |
+| 1 | 12 V DC power supply | **12 V, 3 A**, 5.5 × 2.1 mm plug | Stall current can exceed rated current |
 | 1 | DC barrel jack, panel mount | 5.5 × 2.1 mm, 11 mm hole | |
-| 1 | Inline fuse holder + 2–3 A fuse | | On the 12 V input |
-| 2 | Cable gland PG7 | 12.5 mm hole | Motor cable, probe cable |
-| 1 | Perfboard + wire + screw terminals / JST-XH | | |
-| opt | SSD1306 0.96" I2C OLED | | Set `USE_OLED 1` in firmware |
-| opt | Battery instead of mains | 3S Li-ion pack (11.1 V, ≥ 3 Ah) with BMS and 12.6 V charger | Use only a protected pack, not bare cells. Not tested here |
+| 1 | Inline fuse holder + 3 A fuse | | On the 12 V input |
+| 1 | PG7 cable gland | 12.5 mm hole | Motor cable out of the box |
+| — | Wire (18–20 AWG), crimp/screw terminals, 100 nF ceramic capacitor across the motor terminals | | |
+| opt | Battery instead of mains | 3S Li-ion pack (11.1 V, ≥ 3 Ah) with BMS + charger | Protected pack only. Not tested here |
 
-Wiring is in the header of `firmware/pot_controller/pot_controller.ino`.
+Wiring: supply → fuse → switch → PWM module → motor.
 
 ## Mechanical / hardware
 | Qty | Part | Notes |
@@ -50,4 +41,4 @@ Wiring is in the header of `firmware/pot_controller/pot_controller.ino`.
 
 The second `blade_half` needs no mirroring: the assembly rotates it 180°.
 
-**Food contact.** The blades, the rod, the probe tube and the inner clamp jaw are in or near the food. Print them in food-safe material (PP/PA12 with a manufacturer declaration, or order in nylon from a print service), or use stainless blades. Layer lines trap residue, so wash well and keep prints for occasional home use only. Do not use PLA, ABS or PETG for anything that sits in hot liquid.
+**Food contact.** The blades, the rod and the inner clamp jaw are in or near the food. Print them in food-safe material (PP/PA12 with a manufacturer declaration, or order in nylon from a print service), or use stainless blades. Layer lines trap residue, so wash well and keep prints for occasional home use only. Do not use PLA, ABS or PETG for anything that sits in hot liquid.
